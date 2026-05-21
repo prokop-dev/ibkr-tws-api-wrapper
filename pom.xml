@@ -10,9 +10,6 @@
     </properties>
 
     <build>
-        <sourceDirectory>.</sourceDirectory>
-        <directory>build</directory>
-
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
