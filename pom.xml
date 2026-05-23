@@ -7,6 +7,32 @@
     <version>0.0.1</version>
     <!-- <version>10.39.1</version> -->
 
+    <name>Modern Java TWS API Wrapper</name>
+    <description>A lightweight, high-performance Java 21+ wrapper for the Interactive Brokers (IBKR) Trader Workstation (TWS) API, optimized for MCP servers and modern asynchronous patterns.</description>
+    <url>https://github.com/prokop/ibkr-tws-api-wrapper</url>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Bart Prokop</name>
+            <email>bart@prokop.dev</email>
+            <organization>Prokop Family Office</organization>
+            <organizationUrl>https://prokop.dev</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/prokop/ibkr-tws-api-wrapper.git</connection>
+        <developerConnection>scm:git:ssh://github.com:prokop/ibkr-tws-api-wrapper.git</developerConnection>
+        <url>https://github.com/prokop/ibkr-tws-api-wrapper/tree/main</url>
+    </scm>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
@@ -33,6 +59,11 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <excludes>
+                        <exclude>com/ib/**</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
 
             <plugin>
@@ -49,6 +80,7 @@
                 </executions>
                 <configuration>
                     <doclint>none</doclint>
+                    <excludePackageNames>com.ib.*</excludePackageNames>
                 </configuration>
             </plugin>
 
