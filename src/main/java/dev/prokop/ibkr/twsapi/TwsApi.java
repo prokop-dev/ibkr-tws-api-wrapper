@@ -2,15 +2,18 @@ package dev.prokop.ibkr.twsapi;
 
 import com.ib.client.*;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 public class TwsApi {
 
+    private CompletableFuture<Void> readyFuture;
     private final EClientSocket eClientSocket;
 
     public TwsApi() {
@@ -18,23 +21,26 @@ public class TwsApi {
         eClientSocket = new EClientSocket(eWrapper, eReaderSignal);
     }
 
-    public void connect(String host) {
+    public CompletableFuture<Void> connect(String host) {
+        readyFuture = new CompletableFuture<>();
         System.out.println("Connecting to " + host);
         eClientSocket.eConnect(host, 4001, 1);
         if (eClientSocket.isConnected()) {
             start();
         } else {
-            System.out.println("Failed to connect. Is IB Gateway running and API enabled?");
+            readyFuture.completeExceptionally(
+                    new RuntimeException("Failed to connect to " + host + ":4001. Is IB Gateway running and API enabled?")
+            );
         }
+        return readyFuture;
     }
 
     private void start() {
         System.out.println("Connected successfully! Starting reader thread...");
 
         // Create the background reader thread to process incoming socket data
-        EReader eReader = new EReader(eClientSocket, eReaderSignal);
+        final EReader eReader = new EReader(eClientSocket, eReaderSignal);
         eReader.start();
-
 
         // Thread to process the signal queue and feed data to EWrapper
         new Thread(() -> {
@@ -59,11 +65,10 @@ public class TwsApi {
         System.out.println("Dis2");
     }
 
-    private final Map<Class<? extends TwsEvent>, Consumer<? extends TwsEvent>> callbacks = new ConcurrentHashMap<>();
     private final EReaderSignal eReaderSignal = new EJavaSignal();
+    private final Map<Class<? extends TwsEvent>, List<Consumer<? extends TwsEvent>>> listeners = new ConcurrentHashMap<>();
 
     private final EWrapper eWrapper = new DefaultEWrapper() {
-        private final TwsApi parent = TwsApi.this;
 
         @Override
         public void connectAck() {
@@ -87,21 +92,20 @@ public class TwsApi {
 
         @Override
         public void error(int id, long errorTime, int errorCode, String errorMsg, String advancedOrderRejectJson) {
-            super.error(id, errorTime, errorCode, errorMsg, advancedOrderRejectJson);
-            System.out.printf("Error [ID: %d, Code: %d]: %s\n", id, errorCode, errorMsg);
+            dispatch(new TwsEvent.Error(id, errorTime, errorCode, errorMsg, advancedOrderRejectJson));
         }
 
         @Override
         public void managedAccounts(String accountsList) {
-            System.out.println("Managed Accounts: " + accountsList);
-            parent.accountsList.addAll(List.of(accountsList.split(",")));
-            System.out.println(parent.accountsList);
+            System.out.println("managedAccounts:"+accountsList);
+            managedAccounts.addAll(List.of(accountsList.split(",")));
         }
 
         @Override
         public void nextValidId(int orderId) {
-            System.out.println("Next Valid Order ID: " + orderId);
-            parent.nextValidOrderId.set(orderId);
+            System.out.println("nextValidId:"+orderId);
+            nextValidId.set(orderId);
+            readyFuture.complete(null);
         }
 
         @Override
@@ -117,29 +121,30 @@ public class TwsApi {
     };
 
     public <T extends TwsEvent & TwsEvent.Concrete> void on(Class<T> type, Consumer<T> consumer) {
-        callbacks.put(type, consumer);
+        listeners.computeIfAbsent(type, k -> new CopyOnWriteArrayList<>()).add(consumer);
+        System.out.println("registered: " + consumer);
     }
 
     private <T extends TwsEvent> void dispatch(T event) {
-        Consumer<T> consumer = (Consumer<T>) callbacks.get(event.getClass());
-        if (consumer != null) {
-            consumer.accept(event);
+        List<Consumer<? extends TwsEvent>> consumers = listeners.get(event.getClass());
+        if (consumers != null) {
+            consumers.forEach(c -> ((Consumer<T>) c).accept(event));
         }
     }
 
-    private final List<String> accountsList = new ArrayList<>();
-    private final AtomicInteger nextValidOrderId = new AtomicInteger();
+    private final List<String> managedAccounts = new CopyOnWriteArrayList<>();
+    private final AtomicInteger nextValidId = new AtomicInteger(Integer.MIN_VALUE);
 
-    private int nextOrderId() {
-        return nextValidOrderId.getAndIncrement();
+    public int nextValidId() {
+        return nextValidId.getAndIncrement();
     }
 
     public List<String> getAccountsList() {
-        return accountsList;
+        return Collections.unmodifiableList(managedAccounts);
     }
 
     public void reqPnL(String account, String modelCode) {
-        eClientSocket.reqPnL(nextOrderId(), account, modelCode);
+        eClientSocket.reqPnL(nextValidId(), account, modelCode);
     }
 
     public void reqPositions() {

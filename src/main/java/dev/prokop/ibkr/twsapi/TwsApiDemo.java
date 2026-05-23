@@ -1,13 +1,15 @@
 package dev.prokop.ibkr.twsapi;
 
-public class Demo {
+import java.util.concurrent.CompletableFuture;
+
+public class TwsApiDemo {
 
     public static void main(String[] args) throws InterruptedException {
         TwsApi twsApi = new TwsApi();
-        twsApi.connect("127.0.0.1");
-        Thread.sleep(2000);
+        CompletableFuture<Void> connected = twsApi.connect("127.0.0.1");
+        connected.join();
 
-
+        twsApi.on(TwsEvent.Error.class, System.out::println);
         twsApi.on(TwsEvent.Pnl.class, System.out::println);
         twsApi.on(TwsEvent.Position.class, System.out::println);
 
