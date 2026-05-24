@@ -4,7 +4,7 @@
 
     <groupId>dev.prokop.ibkr</groupId>
     <artifactId>tws-api</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <!-- <version>10.39.1</version> -->
 
     <name>Modern Java TWS API Wrapper</name>
