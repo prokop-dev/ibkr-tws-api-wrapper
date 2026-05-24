@@ -28,6 +28,33 @@ The project is structured to separate concerns:
 
 This library will be released to **Maven Central**, providing a stable and versioned dependency for trading applications and MCP server implementations.
 
+## Native Image Build (GraalVM)
+
+This library and its demo can be compiled into a standalone native executable using GraalVM. This is highly recommended for **MCP Server** deployments to ensure near-instant startup times and zero JVM dependency on the host machine.
+
+### Prerequisites
+
+1.  **GraalVM JDK 21+**: We recommend [GraalVM for JDK 21](https://www.graalvm.org/downloads/).
+    *   On macOS: `brew install --cask graalvm-jdk@21`
+2.  **Native Image Tool**: Ensure `native-image` is in your `PATH`.
+    *   Verify with: `native-image --version`
+
+### Building the Executable
+
+Run the following command to compile the project into a native binary:
+
+```bash
+mvn clean package -Pnative
+```
+
+The resulting binary will be located at:
+`target/tws-api-demo`
+
+### Why Native?
+- **Fast Startup:** < 50ms (vs ~2s for JVM), critical for responsive MCP tools.
+- **Lower Footprint:** Reduced memory usage, ideal for side-car processes.
+- **Portability:** A single binary file that doesn't require a Java installation on the host.
+
 ## Usage
 
 ```java

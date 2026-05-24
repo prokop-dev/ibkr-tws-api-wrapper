@@ -42,6 +42,7 @@
 
     <profiles>
         <profile>
+            <!-- git tag v0.0.1 && git push origin v0.0.1 && mvn deploy -Prelease -->
             <id>release</id>
             <build>
                 <plugins>
