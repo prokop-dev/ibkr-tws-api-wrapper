@@ -5,34 +5,53 @@ import com.ib.client.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public class TwsApi {
 
-    private CompletableFuture<Void> readyFuture;
+    /**
+     * A "Readiness Gate" that handles three distinct states: Disconnected, Connecting, and Ready.
+     */
+    private final AtomicReference<CompletableFuture<Void>> readyGate =
+            // Initialize as a failed future so calls before connect() fail immediately
+            new AtomicReference<>(CompletableFuture.failedFuture(new IllegalStateException("Not connected")));
+
     private final EClientSocket eClientSocket;
 
     public TwsApi() {
-        System.out.println("Creating EClient / EClientSocket...");
+        // Just initializes parent of EClientSocket, no socket/connectivity here.
         eClientSocket = new EClientSocket(eWrapper, eReaderSignal);
     }
 
+    private void ensureReady() {
+        CompletableFuture<Void> gate = readyGate.get();
+        try {
+            // Wait for readiness with a timeout to avoid hanging the MCP server forever
+            gate.get(5, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            throw new RuntimeException("TWS API not ready: " + e.getMessage(), e);
+        }
+    }
+
     public CompletableFuture<Void> connect(String host) {
-        readyFuture = new CompletableFuture<>();
+        return connect(host, 4001, 1);
+    }
+
+    public CompletableFuture<Void> connect(String host, int port, int clientId) {
+        readyGate.set(new CompletableFuture<>()); // Replace the gate with a new, incomplete future
         System.out.println("Connecting to " + host);
-        eClientSocket.eConnect(host, 4001, 1);
+        eClientSocket.eConnect(host, port, clientId);
         if (eClientSocket.isConnected()) {
             start();
         } else {
-            readyFuture.completeExceptionally(
-                    new RuntimeException("Failed to connect to " + host + ":4001. Is IB Gateway running and API enabled?")
+            readyGate.get().completeExceptionally(
+                    new RuntimeException("Failed to connect to " + host + ":" + port + ". Is IB Gateway running and API enabled?")
             );
         }
-        return readyFuture;
+        return readyGate.get();
     }
 
     private void start() {
@@ -78,6 +97,10 @@ public class TwsApi {
         @Override
         public void connectionClosed() {
             System.out.println("Connection to IB Gateway closed.");
+            // Reset the gate to a new incomplete future.
+            // Any thread that calls a req* method from this moment on will
+            // BLOCK at ensureReady() until the reconnection logic finishes.
+            readyGate.set(new CompletableFuture<>());
         }
 
         @Override
@@ -97,15 +120,17 @@ public class TwsApi {
 
         @Override
         public void managedAccounts(String accountsList) {
-            System.out.println("managedAccounts:"+accountsList);
+            System.out.println("managedAccounts:" + accountsList);
             managedAccounts.addAll(List.of(accountsList.split(",")));
         }
 
         @Override
         public void nextValidId(int orderId) {
-            System.out.println("nextValidId:"+orderId);
+            System.out.println("nextValidId:" + orderId);
             nextValidId.set(orderId);
-            readyFuture.complete(null);
+
+            // Open the gate! All blocked req* calls now proceed simultaneously.
+            readyGate.get().complete(null);
         }
 
         @Override
@@ -135,19 +160,24 @@ public class TwsApi {
     private final List<String> managedAccounts = new CopyOnWriteArrayList<>();
     private final AtomicInteger nextValidId = new AtomicInteger(Integer.MIN_VALUE);
 
-    public int nextValidId() {
+    private int nextValidId() {
         return nextValidId.getAndIncrement();
     }
 
     public List<String> getAccountsList() {
+        ensureReady();
         return Collections.unmodifiableList(managedAccounts);
     }
 
-    public void reqPnL(String account, String modelCode) {
-        eClientSocket.reqPnL(nextValidId(), account, modelCode);
+    public int reqPnL(String account, String modelCode) {
+        ensureReady(); // This blocks until nextValidId is received
+        final var reqId = nextValidId();
+        eClientSocket.reqPnL(reqId, account, modelCode);
+        return reqId;
     }
 
     public void reqPositions() {
+        ensureReady();
         eClientSocket.reqPositions();
     }
 
