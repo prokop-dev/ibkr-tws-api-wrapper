@@ -85,8 +85,6 @@ public class TwsApi {
     }
 
     private final EReaderSignal eReaderSignal = new EJavaSignal();
-    private final Map<Class<? extends TwsEvent>, List<Consumer<? extends TwsEvent>>> listeners = new ConcurrentHashMap<>();
-
     private final EWrapper eWrapper = new DefaultEWrapper() {
 
         @Override
@@ -101,6 +99,7 @@ public class TwsApi {
             // Any thread that calls a req* method from this moment on will
             // BLOCK at ensureReady() until the reconnection logic finishes.
             readyGate.set(new CompletableFuture<>());
+            dispatch(new TwsEvent.ConnectionClosed());
         }
 
         @Override
@@ -143,11 +142,16 @@ public class TwsApi {
             dispatch(new TwsEvent.Position(account, contract, pos, avgCost));
         }
 
+        @Override
+        public void positionEnd() {
+            dispatch(new TwsEvent.PositionEnd());
+        }
     };
+
+    private final Map<Class<? extends TwsEvent>, List<Consumer<? extends TwsEvent>>> listeners = new ConcurrentHashMap<>();
 
     public <T extends TwsEvent & TwsEvent.Concrete> void on(Class<T> type, Consumer<T> consumer) {
         listeners.computeIfAbsent(type, k -> new CopyOnWriteArrayList<>()).add(consumer);
-        System.out.println("registered: " + consumer);
     }
 
     private <T extends TwsEvent> void dispatch(T event) {
