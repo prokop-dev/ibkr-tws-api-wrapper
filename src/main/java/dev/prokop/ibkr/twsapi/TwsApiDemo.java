@@ -8,10 +8,12 @@ public class TwsApiDemo {
         TwsApi twsApi = new TwsApi();
 
         // Callback registration
+        twsApi.on(TwsEvent.AccountSummary.class, System.out::println);
+        twsApi.on(TwsEvent.AccountSummaryEnd.class, System.out::println);
         twsApi.on(TwsEvent.ConnectionClosed.class, System.out::println);
         twsApi.on(TwsEvent.Error.class, System.out::println);
         twsApi.on(TwsEvent.Pnl.class, System.out::println);
-        twsApi.on(TwsEvent.Position.class, System.out::println);
+        //twsApi.on(TwsEvent.Position.class, System.out::println);
         twsApi.on(TwsEvent.PositionEnd.class, System.out::println);
 
         long startConnecting = System.currentTimeMillis();
@@ -28,6 +30,8 @@ public class TwsApiDemo {
         twsApi.reqPnL(twsApi.getAccountsList().getFirst(), "");
         // note that thread silently paused till API was ready to serve requests.
         System.out.println("Time since epoch: " + (System.currentTimeMillis()-startConnecting));
+
+        twsApi.reqAccountSummary("All", "NetLiquidation, TotalCashValue, ExcessLiquidity");
 
         Thread.sleep(10000);
         twsApi.disconnect();

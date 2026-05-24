@@ -88,6 +88,16 @@ public class TwsApi {
     private final EWrapper eWrapper = new DefaultEWrapper() {
 
         @Override
+        public void accountSummary(int reqId, String account, String tag, String value, String currency) {
+            dispatch(new TwsEvent.AccountSummary(reqId, account, tag, value, currency));
+        }
+
+        @Override
+        public void accountSummaryEnd(int reqId) {
+            dispatch(new TwsEvent.AccountSummaryEnd(reqId));
+        }
+
+        @Override
         public void connectAck() {
             System.out.println("Connection acknowledged by IB Gateway!");
         }
@@ -171,6 +181,13 @@ public class TwsApi {
     public List<String> getAccountsList() {
         ensureReady();
         return Collections.unmodifiableList(managedAccounts);
+    }
+
+    public int reqAccountSummary(String group, String tags) {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.reqAccountSummary(reqId, group, tags);
+        return reqId;
     }
 
     public int reqPnL(String account, String modelCode) {

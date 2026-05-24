@@ -9,6 +9,8 @@ public sealed interface TwsEvent {
         // enforces TwsEvent implementations only as method arguments at the compile time
     }
 
+    record AccountSummary(int reqId, String account, String tag, String value, String currency) implements TwsEvent, Concrete { }
+    record AccountSummaryEnd(int reqId) implements TwsEvent, Concrete { }
     record ConnectionClosed() implements TwsEvent, Concrete { }
     record Error(int id, long errorTime, int errorCode, String errorMsg, String advancedOrderRejectJson) implements TwsEvent, Concrete { }
     record Pnl(int reqId, double dailyPnL, double unrealizedPnL, double realizedPnL) implements TwsEvent, Concrete { }
