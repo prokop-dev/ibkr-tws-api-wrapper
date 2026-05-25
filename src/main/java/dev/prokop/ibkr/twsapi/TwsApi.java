@@ -79,7 +79,7 @@ public class TwsApi {
                     log.error("Exception handling message: " + e.getMessage());
                 }
             }
-            log.info("Exit of the loop");
+            log.info("Thread exit.");
         });
         processMsgThread.setName("TwsEvent-Processor");
         processMsgThread.start();
@@ -87,11 +87,9 @@ public class TwsApi {
 
 
     public void disconnect() {
-        log.info("Dis1");
         if (eClientSocket.isConnected()) {
             eClientSocket.eDisconnect();
         }
-        log.info("Dis2");
     }
 
     private final EReaderSignal eReaderSignal = new EJavaSignal();

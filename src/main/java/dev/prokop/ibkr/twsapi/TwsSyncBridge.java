@@ -23,7 +23,8 @@ public class TwsSyncBridge {
         twsApi.connect("127.0.0.1");
 
         final var twsSyncBridge = new TwsSyncBridge(twsApi);
-        System.out.println(twsSyncBridge.getPositions().get());
+        log.info("Positions: {}", twsSyncBridge.getPositions().get());
+        log.info("Managed Accounts: {}", twsSyncBridge.getManagedAccounts().get());
     }
 
     private final TwsApi twsApi;
@@ -65,6 +66,10 @@ public class TwsSyncBridge {
      */
     public CompletableFuture<Collection<TwsEvent.Position>> getPositions() {
         return positionsInitialSync.thenApply(v -> Collections.unmodifiableCollection(positions.values()));
+    }
+
+    public CompletableFuture<Collection<String>> getManagedAccounts() {
+        return CompletableFuture.completedFuture(twsApi.getAccountsList());
     }
 
     /**

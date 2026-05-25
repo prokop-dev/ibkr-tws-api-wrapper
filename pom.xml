@@ -42,8 +42,9 @@
 
     <profiles>
         <profile>
-            <!-- git tag v0.0.1 && git push origin v0.0.1 && mvn deploy -Prelease -->
             <id>release</id>
+            <!-- git tag v0.0.1 && git push origin v0.0.1 -->
+            <!-- mvn clean deploy -P release -->
             <build>
                 <plugins>
                     <plugin>
@@ -77,8 +78,8 @@
             </build>
         </profile>
         <profile>
-            <!-- mvn clean package -P native -->
             <id>native</id>
+            <!-- mvn clean package -P native -->
             <build>
                 <plugins>
                     <plugin>

@@ -55,15 +55,55 @@ The resulting binary will be located at:
 - **Lower Footprint:** Reduced memory usage, ideal for side-car processes.
 - **Portability:** A single binary file that doesn't require a Java installation on the host.
 
-## Usage
+## Usage Guide
+
+This library offers two primary ways to interact with the TWS API, depending on your architectural needs.
+
+### 1. Event-Driven Approach (`TwsApi`)
+
+The core `TwsApi` class provides a high-performance, asynchronous, and event-driven interface. It uses strongly-typed records for all incoming data.
 
 ```java
-TwsApi api = new TwsApi();
-api.connect("127.0.0.1").thenAccept(client -> {
-    System.out.println("Ready to trade!");
-    client.reqPositions();
+TwsApi twsApi = new TwsApi();
+
+// Register listeners for specific events
+twsApi.on(TwsEvent.AccountSummary.class, event -> {
+    System.out.println("Account Summary: " + event.account() + " - " + event.tag() + ": " + event.value());
+});
+
+twsApi.on(TwsEvent.Position.class, event -> {
+    System.out.println("Position: " + event.account() + " " + event.contract().symbol() + " " + event.pos());
+});
+
+// Connect to IB Gateway or TWS
+twsApi.connect("127.0.0.1", 4001, 1).thenRun(() -> {
+    System.out.println("Connected and ready!");
+    
+    // Request data - responses will flow into the listeners registered above
+    twsApi.reqPositions();
+    twsApi.reqAccountSummary("All", "NetLiquidation,TotalCashValue");
+});
+```
+
+### 2. Synchronous/Stateful Approach (`TwsSyncBridge`)
+
+The `TwsSyncBridge` provides a higher-level, stateful view of your portfolio. It manages subscriptions and maps asynchronous callbacks into `CompletableFuture` responses, making it ideal for request/response style interactions.
+
+```java
+TwsApi twsApi = new TwsApi();
+twsApi.connect("127.0.0.1", 4001, 1);
+
+// Wrap the API with the Sync Bridge
+TwsSyncBridge bridge = new TwsSyncBridge(twsApi);
+
+// Wait for the initial data synchronization (optional)
+bridge.ready().thenRun(() -> {
+    // Get a current snapshot of all positions
+    bridge.getPositions().thenAccept(positions -> {
+        positions.forEach(p -> System.out.println(p.account() + ": " + p.contract().symbol() + " @ " + p.pos()));
+    });
 });
 ```
 
 ---
-*Note: This is a work in progress. Ensure you have IB Gateway or TWS running with API access enabled.*
+*Note: Ensure you have IB Gateway or TWS running with API access enabled (typically on port 4001 for paper trading or 7496 for live trading).*
