@@ -1,16 +1,23 @@
 package dev.prokop.ibkr.twsapi;
 
 import com.ib.client.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public class TwsApi {
+
+    private static final Logger log = LoggerFactory.getLogger(TwsApi.class);
 
     /**
      * A "Readiness Gate" that handles three distinct states: Disconnected, Connecting, and Ready.
@@ -42,7 +49,7 @@ public class TwsApi {
 
     public CompletableFuture<Void> connect(String host, int port, int clientId) {
         readyGate.set(new CompletableFuture<>()); // Replace the gate with a new, incomplete future
-        System.out.println("Connecting to " + host);
+        log.info("Connecting to " + host);
         eClientSocket.eConnect(host, port, clientId);
         if (eClientSocket.isConnected()) {
             start();
@@ -55,33 +62,36 @@ public class TwsApi {
     }
 
     private void start() {
-        System.out.println("Connected successfully! Starting reader thread...");
+        log.info("Connected successfully! Starting reader thread...");
 
         // Create the background reader thread to process incoming socket data
         final EReader eReader = new EReader(eClientSocket, eReaderSignal);
+        eReader.setName("TWS-EReader");
         eReader.start();
 
         // Thread to process the signal queue and feed data to EWrapper
-        new Thread(() -> {
+        Thread processMsgThread = new Thread(() -> {
             while (eClientSocket.isConnected()) {
                 eReaderSignal.waitForSignal();
                 try {
                     eReader.processMsgs();
                 } catch (Exception e) {
-                    System.err.println("Exception handling message: " + e.getMessage());
+                    log.error("Exception handling message: " + e.getMessage());
                 }
             }
-            System.out.println("Exit of the loop");
-        }).start();
+            log.info("Exit of the loop");
+        });
+        processMsgThread.setName("TwsEvent-Processor");
+        processMsgThread.start();
     }
 
 
     public void disconnect() {
-        System.out.println("Dis1");
+        log.info("Dis1");
         if (eClientSocket.isConnected()) {
             eClientSocket.eDisconnect();
         }
-        System.out.println("Dis2");
+        log.info("Dis2");
     }
 
     private final EReaderSignal eReaderSignal = new EJavaSignal();
@@ -99,12 +109,12 @@ public class TwsApi {
 
         @Override
         public void connectAck() {
-            System.out.println("Connection acknowledged by IB Gateway!");
+            log.info("Connection acknowledged by IB Gateway!");
         }
 
         @Override
         public void connectionClosed() {
-            System.out.println("Connection to IB Gateway closed.");
+            log.info("Connection to IB Gateway closed.");
             // Reset the gate to a new incomplete future.
             // Any thread that calls a req* method from this moment on will
             // BLOCK at ensureReady() until the reconnection logic finishes.
@@ -114,12 +124,12 @@ public class TwsApi {
 
         @Override
         public void error(Exception e) {
-            System.out.println("API Exception: " + e.getMessage());
+            log.info("API Exception: " + e.getMessage());
         }
 
         @Override
         public void error(String str) {
-            System.out.println("API Error Message: " + str);
+            log.info("API Error Message: " + str);
         }
 
         @Override
@@ -129,13 +139,13 @@ public class TwsApi {
 
         @Override
         public void managedAccounts(String accountsList) {
-            System.out.println("managedAccounts:" + accountsList);
+            log.info("managedAccounts:" + accountsList);
             managedAccounts.addAll(List.of(accountsList.split(",")));
         }
 
         @Override
         public void nextValidId(int orderId) {
-            System.out.println("nextValidId:" + orderId);
+            log.info("nextValidId:" + orderId);
             nextValidId.set(orderId);
 
             // Open the gate! All blocked req* calls now proceed simultaneously.
