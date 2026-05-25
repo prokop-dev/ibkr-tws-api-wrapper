@@ -28,6 +28,18 @@ The project is structured to separate concerns:
 
 This library will be released to **Maven Central**, providing a stable and versioned dependency for trading applications and MCP server implementations.
 
+## Installation
+
+Add the following dependency to your `pom.xml`:
+
+```xml
+<dependency>
+    <groupId>dev.prokop.ibkr</groupId>
+    <artifactId>tws-api</artifactId>
+    <version>0.0.3</version>
+</dependency>
+```
+
 ## Native Image Build (GraalVM)
 
 This library and its demo can be compiled into a standalone native executable using GraalVM. This is highly recommended for **MCP Server** deployments to ensure near-instant startup times and zero JVM dependency on the host machine.
