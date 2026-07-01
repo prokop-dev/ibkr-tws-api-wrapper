@@ -182,6 +182,11 @@ public class TwsApi {
         }
 
         @Override
+        public void marketDataType(int reqId, int marketDataType) {
+            dispatch(new TwsEvent.MarketDataType(reqId, marketDataType));
+        }
+
+        @Override
         public void nextValidId(int orderId) {
             log.info("nextValidId:" + orderId);
             nextValidId.set(orderId);
@@ -228,6 +233,46 @@ public class TwsApi {
         @Override
         public void symbolSamples(int reqId, ContractDescription[] contractDescriptions) {
             dispatch(new TwsEvent.SymbolSamples(reqId, contractDescriptions));
+        }
+
+        @Override
+        public void tickEFP(int tickerId, int tickType, double basisPoints, String formattedBasisPoints, double impliedFuture, int holdDays, String futureLastTradeDate, double dividendImpact, double dividendsToLastTradeDate) {
+            dispatch(new TwsEvent.TickEFP(tickerId, tickType, basisPoints, formattedBasisPoints, impliedFuture, holdDays, futureLastTradeDate, dividendImpact, dividendsToLastTradeDate));
+        }
+
+        @Override
+        public void tickGeneric(int tickerId, int tickType, double value) {
+            dispatch(new TwsEvent.TickGeneric(tickerId, tickType, value));
+        }
+
+        @Override
+        public void tickOptionComputation(int tickerId, int field, int tickAttrib, double impliedVol, double delta, double optPrice, double pvDividend, double gamma, double vega, double theta, double undPrice) {
+            dispatch(new TwsEvent.TickOptionComputation(tickerId, field, tickAttrib, impliedVol, delta, optPrice, pvDividend, gamma, vega, theta, undPrice));
+        }
+
+        @Override
+        public void tickPrice(int tickerId, int field, double price, TickAttrib attrib) {
+            dispatch(new TwsEvent.TickPrice(tickerId, field, price, attrib));
+        }
+
+        @Override
+        public void tickReqParams(int tickerId, double minTick, String bboExchange, int snapshotPermissions) {
+            dispatch(new TwsEvent.TickReqParams(tickerId, minTick, bboExchange, snapshotPermissions));
+        }
+
+        @Override
+        public void tickSize(int tickerId, int field, Decimal size) {
+            dispatch(new TwsEvent.TickSize(tickerId, field, size));
+        }
+
+        @Override
+        public void tickSnapshotEnd(int reqId) {
+            dispatch(new TwsEvent.TickSnapshotEnd(reqId));
+        }
+
+        @Override
+        public void tickString(int tickerId, int tickType, String value) {
+            dispatch(new TwsEvent.TickString(tickerId, tickType, value));
         }
     };
 
@@ -334,6 +379,29 @@ public class TwsApi {
         final var reqId = nextValidId();
         eClientSocket.reqMatchingSymbols(reqId, pattern);
         return reqId;
+    }
+
+    // --- Market Data (Wave 3) ---
+
+    public int reqMktData(Contract contract, String genericTickList, boolean snapshot, boolean regulatorySnapshot, List<TagValue> mktDataOptions) {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.reqMktData(reqId, contract, genericTickList, snapshot, regulatorySnapshot, mktDataOptions);
+        return reqId;
+    }
+
+    public int reqMktData(Contract contract, String genericTickList, boolean snapshot) {
+        return reqMktData(contract, genericTickList, snapshot, false, null);
+    }
+
+    public void cancelMktData(int tickerId) {
+        ensureReady();
+        eClientSocket.cancelMktData(tickerId);
+    }
+
+    public void reqMarketDataType(int marketDataType) {
+        ensureReady();
+        eClientSocket.reqMarketDataType(marketDataType);
     }
 
 }

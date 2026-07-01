@@ -20,6 +20,7 @@ public sealed interface TwsEvent {
     record Error(int id, long errorTime, int errorCode, String errorMsg, String advancedOrderRejectJson) implements TwsEvent, Concrete { }
     record ExecDetails(int reqId, Contract contract, Execution execution) implements TwsEvent, Concrete { }
     record ExecDetailsEnd(int reqId) implements TwsEvent, Concrete { }
+    record MarketDataType(int reqId, int marketDataType) implements TwsEvent, Concrete { }
     record OpenOrder(int orderId, Contract contract, Order order, OrderState orderState) implements TwsEvent, Concrete { }
     record OpenOrderEnd() implements TwsEvent, Concrete { }
     record OrderBound(long permId, int clientId, int orderId) implements TwsEvent, Concrete { }
@@ -28,6 +29,14 @@ public sealed interface TwsEvent {
     record Position(String account, Contract contract, Decimal pos, double avgCost) implements TwsEvent, Concrete { }
     record PositionEnd() implements TwsEvent, Concrete {}
     record SymbolSamples(int reqId, ContractDescription[] contractDescriptions) implements TwsEvent, Concrete { }
+    record TickEFP(int tickerId, int tickType, double basisPoints, String formattedBasisPoints, double impliedFuture, int holdDays, String futureLastTradeDate, double dividendImpact, double dividendsToLastTradeDate) implements TwsEvent, Concrete { }
+    record TickGeneric(int tickerId, int tickType, double value) implements TwsEvent, Concrete { }
+    record TickOptionComputation(int tickerId, int field, int tickAttrib, double impliedVol, double delta, double optPrice, double pvDividend, double gamma, double vega, double theta, double undPrice) implements TwsEvent, Concrete { }
+    record TickPrice(int tickerId, int field, double price, TickAttrib attrib) implements TwsEvent, Concrete { }
+    record TickReqParams(int tickerId, double minTick, String bboExchange, int snapshotPermissions) implements TwsEvent, Concrete { }
+    record TickSize(int tickerId, int field, Decimal size) implements TwsEvent, Concrete { }
+    record TickSnapshotEnd(int reqId) implements TwsEvent, Concrete { }
+    record TickString(int tickerId, int tickType, String value) implements TwsEvent, Concrete { }
 
 }
 
