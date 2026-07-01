@@ -106,6 +106,11 @@ public class TwsApi {
         }
 
         @Override
+        public void bondContractDetails(int reqId, ContractDetails contractDetails) {
+            dispatch(new TwsEvent.BondContractDetails(reqId, contractDetails));
+        }
+
+        @Override
         public void commissionAndFeesReport(CommissionAndFeesReport commissionAndFeesReport) {
             dispatch(new TwsEvent.CommissionAndFeesReport(commissionAndFeesReport));
         }
@@ -143,6 +148,16 @@ public class TwsApi {
         @Override
         public void error(String str) {
             log.info("API Error Message: " + str);
+        }
+
+        @Override
+        public void contractDetails(int reqId, ContractDetails contractDetails) {
+            dispatch(new TwsEvent.ContractDetails(reqId, contractDetails));
+        }
+
+        @Override
+        public void contractDetailsEnd(int reqId) {
+            dispatch(new TwsEvent.ContractDetailsEnd(reqId));
         }
 
         @Override
@@ -208,6 +223,11 @@ public class TwsApi {
         @Override
         public void positionEnd() {
             dispatch(new TwsEvent.PositionEnd());
+        }
+
+        @Override
+        public void symbolSamples(int reqId, ContractDescription[] contractDescriptions) {
+            dispatch(new TwsEvent.SymbolSamples(reqId, contractDescriptions));
         }
     };
 
@@ -298,6 +318,22 @@ public class TwsApi {
     public void reqCompletedOrders(boolean apiOnly) {
         ensureReady();
         eClientSocket.reqCompletedOrders(apiOnly);
+    }
+
+    // --- Contract Details (Wave 2) ---
+
+    public int reqContractDetails(Contract contract) {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.reqContractDetails(reqId, contract);
+        return reqId;
+    }
+
+    public int reqMatchingSymbols(String pattern) {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.reqMatchingSymbols(reqId, pattern);
+        return reqId;
     }
 
 }
