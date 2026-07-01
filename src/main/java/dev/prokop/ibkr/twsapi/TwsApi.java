@@ -106,6 +106,21 @@ public class TwsApi {
         }
 
         @Override
+        public void commissionAndFeesReport(CommissionAndFeesReport commissionAndFeesReport) {
+            dispatch(new TwsEvent.CommissionAndFeesReport(commissionAndFeesReport));
+        }
+
+        @Override
+        public void completedOrder(Contract contract, Order order, OrderState orderState) {
+            dispatch(new TwsEvent.CompletedOrder(contract, order, orderState));
+        }
+
+        @Override
+        public void completedOrdersEnd() {
+            dispatch(new TwsEvent.CompletedOrdersEnd());
+        }
+
+        @Override
         public void connectAck() {
             log.info("Connection acknowledged by IB Gateway!");
         }
@@ -136,6 +151,16 @@ public class TwsApi {
         }
 
         @Override
+        public void execDetails(int reqId, Contract contract, Execution execution) {
+            dispatch(new TwsEvent.ExecDetails(reqId, contract, execution));
+        }
+
+        @Override
+        public void execDetailsEnd(int reqId) {
+            dispatch(new TwsEvent.ExecDetailsEnd(reqId));
+        }
+
+        @Override
         public void managedAccounts(String accountsList) {
             log.info("managedAccounts:" + accountsList);
             managedAccounts.addAll(List.of(accountsList.split(",")));
@@ -148,6 +173,26 @@ public class TwsApi {
 
             // Open the gate! All blocked req* calls now proceed simultaneously.
             readyGate.get().complete(null);
+        }
+
+        @Override
+        public void openOrder(int orderId, Contract contract, Order order, OrderState orderState) {
+            dispatch(new TwsEvent.OpenOrder(orderId, contract, order, orderState));
+        }
+
+        @Override
+        public void openOrderEnd() {
+            dispatch(new TwsEvent.OpenOrderEnd());
+        }
+
+        @Override
+        public void orderBound(long permId, int clientId, int orderId) {
+            dispatch(new TwsEvent.OrderBound(permId, clientId, orderId));
+        }
+
+        @Override
+        public void orderStatus(int orderId, String status, Decimal filled, Decimal remaining, double avgFillPrice, long permId, int parentId, double lastFillPrice, int clientId, String whyHeld, double mktCapPrice) {
+            dispatch(new TwsEvent.OrderStatus(orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld, mktCapPrice));
         }
 
         @Override
@@ -208,6 +253,51 @@ public class TwsApi {
     public void reqPositions() {
         ensureReady();
         eClientSocket.reqPositions();
+    }
+
+    // --- Orders & Executions (Wave 1) ---
+
+    public int placeOrder(Contract contract, Order order) {
+        ensureReady();
+        final var orderId = nextValidId();
+        eClientSocket.placeOrder(orderId, contract, order);
+        return orderId;
+    }
+
+    public void cancelOrder(int orderId, OrderCancel orderCancel) {
+        ensureReady();
+        eClientSocket.cancelOrder(orderId, orderCancel);
+    }
+
+    public void cancelOrder(int orderId) {
+        cancelOrder(orderId, new OrderCancel());
+    }
+
+    public void reqOpenOrders() {
+        ensureReady();
+        eClientSocket.reqOpenOrders();
+    }
+
+    public void reqAllOpenOrders() {
+        ensureReady();
+        eClientSocket.reqAllOpenOrders();
+    }
+
+    public void reqAutoOpenOrders(boolean autoBind) {
+        ensureReady();
+        eClientSocket.reqAutoOpenOrders(autoBind);
+    }
+
+    public int reqExecutions(ExecutionFilter filter) {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.reqExecutions(reqId, filter);
+        return reqId;
+    }
+
+    public void reqCompletedOrders(boolean apiOnly) {
+        ensureReady();
+        eClientSocket.reqCompletedOrders(apiOnly);
     }
 
 }
