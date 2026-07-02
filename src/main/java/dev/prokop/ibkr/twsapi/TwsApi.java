@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -176,6 +177,31 @@ public class TwsApi {
         }
 
         @Override
+        public void currentTime(long time) {
+            dispatch(new TwsEvent.CurrentTime(time));
+        }
+
+        @Override
+        public void currentTimeInMillis(long timeInMillis) {
+            dispatch(new TwsEvent.CurrentTimeInMillis(timeInMillis));
+        }
+
+        @Override
+        public void deltaNeutralValidation(int reqId, DeltaNeutralContract deltaNeutralContract) {
+            dispatch(new TwsEvent.DeltaNeutralValidation(reqId, deltaNeutralContract));
+        }
+
+        @Override
+        public void displayGroupList(int reqId, String groups) {
+            dispatch(new TwsEvent.DisplayGroupList(reqId, groups));
+        }
+
+        @Override
+        public void displayGroupUpdated(int reqId, String contractInfo) {
+            dispatch(new TwsEvent.DisplayGroupUpdated(reqId, contractInfo));
+        }
+
+        @Override
         public void error(int id, long errorTime, int errorCode, String errorMsg, String advancedOrderRejectJson) {
             dispatch(new TwsEvent.Error(id, errorTime, errorCode, errorMsg, advancedOrderRejectJson));
         }
@@ -188,6 +214,16 @@ public class TwsApi {
         @Override
         public void execDetailsEnd(int reqId) {
             dispatch(new TwsEvent.ExecDetailsEnd(reqId));
+        }
+
+        @Override
+        public void familyCodes(FamilyCode[] familyCodes) {
+            dispatch(new TwsEvent.FamilyCodes(familyCodes));
+        }
+
+        @Override
+        public void fundamentalData(int reqId, String data) {
+            dispatch(new TwsEvent.FundamentalData(reqId, data));
         }
 
         @Override
@@ -213,6 +249,16 @@ public class TwsApi {
         @Override
         public void historicalDataUpdate(int reqId, Bar bar) {
             dispatch(new TwsEvent.HistoricalDataUpdate(reqId, bar));
+        }
+
+        @Override
+        public void historicalNews(int requestId, String time, String providerCode, String articleId, String headline) {
+            dispatch(new TwsEvent.HistoricalNews(requestId, time, providerCode, articleId, headline));
+        }
+
+        @Override
+        public void historicalNewsEnd(int requestId, boolean hasMore) {
+            dispatch(new TwsEvent.HistoricalNewsEnd(requestId, hasMore));
         }
 
         @Override
@@ -249,6 +295,21 @@ public class TwsApi {
         @Override
         public void marketDataType(int reqId, int marketDataType) {
             dispatch(new TwsEvent.MarketDataType(reqId, marketDataType));
+        }
+
+        @Override
+        public void marketRule(int marketRuleId, PriceIncrement[] priceIncrements) {
+            dispatch(new TwsEvent.MarketRule(marketRuleId, priceIncrements));
+        }
+
+        @Override
+        public void newsArticle(int requestId, int articleType, String articleText) {
+            dispatch(new TwsEvent.NewsArticle(requestId, articleType, articleText));
+        }
+
+        @Override
+        public void newsProviders(NewsProvider[] newsProviders) {
+            dispatch(new TwsEvent.NewsProviders(newsProviders));
         }
 
         @Override
@@ -316,6 +377,16 @@ public class TwsApi {
         }
 
         @Override
+        public void receiveFA(int faDataType, String xml) {
+            dispatch(new TwsEvent.ReceiveFA(faDataType, xml));
+        }
+
+        @Override
+        public void replaceFAEnd(int reqId, String text) {
+            dispatch(new TwsEvent.ReplaceFAEnd(reqId, text));
+        }
+
+        @Override
         public void rerouteMktDataReq(int reqId, int conId, String exchange) {
             dispatch(new TwsEvent.RerouteMktDataReq(reqId, conId, exchange));
         }
@@ -323,6 +394,41 @@ public class TwsApi {
         @Override
         public void rerouteMktDepthReq(int reqId, int conId, String exchange) {
             dispatch(new TwsEvent.RerouteMktDepthReq(reqId, conId, exchange));
+        }
+
+        @Override
+        public void scannerData(int reqId, int rank, ContractDetails contractDetails, String distance, String benchmark, String projection, String legsStr) {
+            dispatch(new TwsEvent.ScannerData(reqId, rank, contractDetails, distance, benchmark, projection, legsStr));
+        }
+
+        @Override
+        public void scannerDataEnd(int reqId) {
+            dispatch(new TwsEvent.ScannerDataEnd(reqId));
+        }
+
+        @Override
+        public void scannerParameters(String xml) {
+            dispatch(new TwsEvent.ScannerParameters(xml));
+        }
+
+        @Override
+        public void securityDefinitionOptionalParameter(int reqId, String exchange, int underlyingConId, String tradingClass, String multiplier, Set<String> expirations, Set<Double> strikes) {
+            dispatch(new TwsEvent.SecurityDefinitionOptionalParameter(reqId, exchange, underlyingConId, tradingClass, multiplier, expirations, strikes));
+        }
+
+        @Override
+        public void securityDefinitionOptionalParameterEnd(int reqId) {
+            dispatch(new TwsEvent.SecurityDefinitionOptionalParameterEnd(reqId));
+        }
+
+        @Override
+        public void smartComponents(int reqId, Map<Integer, Map.Entry<String, Character>> theMap) {
+            dispatch(new TwsEvent.SmartComponents(reqId, theMap));
+        }
+
+        @Override
+        public void softDollarTiers(int reqId, SoftDollarTier[] tiers) {
+            dispatch(new TwsEvent.SoftDollarTiers(reqId, tiers));
         }
 
         @Override
@@ -353,6 +459,11 @@ public class TwsApi {
         @Override
         public void tickGeneric(int tickerId, int tickType, double value) {
             dispatch(new TwsEvent.TickGeneric(tickerId, tickType, value));
+        }
+
+        @Override
+        public void tickNews(int tickerId, long timeStamp, String providerCode, String articleId, String headline, String extraData) {
+            dispatch(new TwsEvent.TickNews(tickerId, timeStamp, providerCode, articleId, headline, extraData));
         }
 
         @Override
@@ -406,8 +517,48 @@ public class TwsApi {
         }
 
         @Override
+        public void updateNewsBulletin(int msgId, int msgType, String message, String origExchange) {
+            dispatch(new TwsEvent.UpdateNewsBulletin(msgId, msgType, message, origExchange));
+        }
+
+        @Override
         public void updatePortfolio(Contract contract, Decimal position, double marketPrice, double marketValue, double averageCost, double unrealizedPNL, double realizedPNL, String accountName) {
             dispatch(new TwsEvent.UpdatePortfolio(contract, position, marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL, accountName));
+        }
+
+        @Override
+        public void userInfo(int reqId, String whiteBrandingId) {
+            dispatch(new TwsEvent.UserInfo(reqId, whiteBrandingId));
+        }
+
+        @Override
+        public void verifyAndAuthCompleted(boolean isSuccessful, String errorText) {
+            dispatch(new TwsEvent.VerifyAndAuthCompleted(isSuccessful, errorText));
+        }
+
+        @Override
+        public void verifyAndAuthMessageAPI(String apiData, String xyzChallenge) {
+            dispatch(new TwsEvent.VerifyAndAuthMessageAPI(apiData, xyzChallenge));
+        }
+
+        @Override
+        public void verifyCompleted(boolean isSuccessful, String errorText) {
+            dispatch(new TwsEvent.VerifyCompleted(isSuccessful, errorText));
+        }
+
+        @Override
+        public void verifyMessageAPI(String apiData) {
+            dispatch(new TwsEvent.VerifyMessageAPI(apiData));
+        }
+
+        @Override
+        public void wshEventData(int reqId, String dataJson) {
+            dispatch(new TwsEvent.WshEventData(reqId, dataJson));
+        }
+
+        @Override
+        public void wshMetaData(int reqId, String dataJson) {
+            dispatch(new TwsEvent.WshMetaData(reqId, dataJson));
         }
     };
 
@@ -677,6 +828,180 @@ public class TwsApi {
     public void reqMktDepthExchanges() {
         ensureReady();
         eClientSocket.reqMktDepthExchanges();
+    }
+
+    // --- Scanner, News, Options, Misc (Wave 8) ---
+
+    public void reqCurrentTime() {
+        ensureReady();
+        eClientSocket.reqCurrentTime();
+    }
+
+    public int reqFundamentalData(Contract contract, String reportType, List<TagValue> fundamentalDataOptions) {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.reqFundamentalData(reqId, contract, reportType, fundamentalDataOptions);
+        return reqId;
+    }
+
+    public void cancelFundamentalData(int reqId) {
+        ensureReady();
+        eClientSocket.cancelFundamentalData(reqId);
+    }
+
+    public int reqSecDefOptParams(String underlyingSymbol, String futFopExchange, String underlyingSecType, int underlyingConId) {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.reqSecDefOptParams(reqId, underlyingSymbol, futFopExchange, underlyingSecType, underlyingConId);
+        return reqId;
+    }
+
+    public int reqSoftDollarTiers() {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.reqSoftDollarTiers(reqId);
+        return reqId;
+    }
+
+    public void reqFamilyCodes() {
+        ensureReady();
+        eClientSocket.reqFamilyCodes();
+    }
+
+    public void reqNewsProviders() {
+        ensureReady();
+        eClientSocket.reqNewsProviders();
+    }
+
+    public int reqNewsArticle(String providerCode, String articleId, List<TagValue> newsArticleOptions) {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.reqNewsArticle(reqId, providerCode, articleId, newsArticleOptions);
+        return reqId;
+    }
+
+    public int reqHistoricalNews(int conId, String providerCodes, String startDateTime, String endDateTime, int totalResults, List<TagValue> historicalNewsOptions) {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.reqHistoricalNews(reqId, conId, providerCodes, startDateTime, endDateTime, totalResults, historicalNewsOptions);
+        return reqId;
+    }
+
+    public int reqSmartComponents(String bboExchange) {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.reqSmartComponents(reqId, bboExchange);
+        return reqId;
+    }
+
+    public void reqMarketRule(int marketRuleId) {
+        ensureReady();
+        eClientSocket.reqMarketRule(marketRuleId);
+    }
+
+    public int reqScannerSubscription(ScannerSubscription subscription, List<TagValue> scannerSubscriptionOptions, List<TagValue> scannerSubscriptionFilterOptions) {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.reqScannerSubscription(reqId, subscription, scannerSubscriptionOptions, scannerSubscriptionFilterOptions);
+        return reqId;
+    }
+
+    public void cancelScannerSubscription(int tickerId) {
+        ensureReady();
+        eClientSocket.cancelScannerSubscription(tickerId);
+    }
+
+    public void reqScannerParameters() {
+        ensureReady();
+        eClientSocket.reqScannerParameters();
+    }
+
+    public int reqWshMetaData() {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.reqWshMetaData(reqId);
+        return reqId;
+    }
+
+    public int reqWshEventData(WshEventData wshEventData) {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.reqWshEventData(reqId, wshEventData);
+        return reqId;
+    }
+
+    public void cancelWshMetaData(int reqId) {
+        ensureReady();
+        eClientSocket.cancelWshMetaData(reqId);
+    }
+
+    public void cancelWshEventData(int reqId) {
+        ensureReady();
+        eClientSocket.cancelWshEventData(reqId);
+    }
+
+    public int reqUserInfo() {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.reqUserInfo(reqId);
+        return reqId;
+    }
+
+    public void reqCurrentTimeInMillis() {
+        ensureReady();
+        eClientSocket.reqCurrentTimeInMillis();
+    }
+
+    public void requestFA(int faDataType) {
+        ensureReady();
+        eClientSocket.requestFA(faDataType);
+    }
+
+    public void replaceFA(int reqId, int faDataType, String xml) {
+        ensureReady();
+        eClientSocket.replaceFA(reqId, faDataType, xml);
+    }
+
+    public void verifyRequest(String apiName, String apiVersion) {
+        ensureReady();
+        eClientSocket.verifyRequest(apiName, apiVersion);
+    }
+
+    public void verifyMessage(String apiData) {
+        ensureReady();
+        eClientSocket.verifyMessage(apiData);
+    }
+
+    public void verifyAndAuthRequest(String apiName, String apiVersion, String opaqueIsvKey) {
+        ensureReady();
+        eClientSocket.verifyAndAuthRequest(apiName, apiVersion, opaqueIsvKey);
+    }
+
+    public void verifyAndAuthMessage(String apiData, String xyzResponse) {
+        ensureReady();
+        eClientSocket.verifyAndAuthMessage(apiData, xyzResponse);
+    }
+
+    public int queryDisplayGroups() {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.queryDisplayGroups(reqId);
+        return reqId;
+    }
+
+    public void subscribeToGroupEvents(int reqId, int groupId) {
+        ensureReady();
+        eClientSocket.subscribeToGroupEvents(reqId, groupId);
+    }
+
+    public void updateDisplayGroup(int reqId, String contractInfo) {
+        ensureReady();
+        eClientSocket.updateDisplayGroup(reqId, contractInfo);
+    }
+
+    public void unsubscribeFromGroupEvents(int reqId) {
+        ensureReady();
+        eClientSocket.unsubscribeFromGroupEvents(reqId);
     }
 
 }
