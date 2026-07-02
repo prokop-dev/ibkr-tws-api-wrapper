@@ -34,23 +34,13 @@ public class TwsApi {
         eClientSocket = new EClientSocket(eWrapper, eReaderSignal);
     }
 
-    private void ensureReady() {
-        CompletableFuture<Void> gate = readyGate.get();
-        try {
-            // Wait for readiness with a timeout to avoid hanging the MCP server forever
-            gate.get(5, TimeUnit.SECONDS);
-        } catch (Exception e) {
-            throw new RuntimeException("TWS API not ready: " + e.getMessage(), e);
-        }
-    }
-
     public CompletableFuture<Void> connect(String host) {
         return connect(host, 4001, 1);
     }
 
     public CompletableFuture<Void> connect(String host, int port, int clientId) {
         readyGate.set(new CompletableFuture<>()); // Replace the gate with a new, incomplete future
-        log.info("Connecting to " + host);
+        log.info("Connecting to {}", host);
         eClientSocket.eConnect(host, port, clientId);
         if (eClientSocket.isConnected()) {
             start();
@@ -577,6 +567,16 @@ public class TwsApi {
 
     private final List<String> managedAccounts = new CopyOnWriteArrayList<>();
     private final AtomicInteger nextValidId = new AtomicInteger(Integer.MIN_VALUE);
+
+    private void ensureReady() {
+        CompletableFuture<Void> gate = readyGate.get();
+        try {
+            // Wait for readiness with a timeout to avoid hanging the MCP server forever
+            gate.get(5, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            throw new RuntimeException("TWS API not ready: " + e.getMessage(), e);
+        }
+    }
 
     private int nextValidId() {
         return nextValidId.getAndIncrement();
