@@ -35,6 +35,7 @@ public sealed interface TwsEvent {
     record HistoricalTicksBidAsk(int reqId, List<HistoricalTickBidAsk> ticks, boolean done) implements TwsEvent, Concrete { }
     record HistoricalTicksLast(int reqId, List<HistoricalTickLast> ticks, boolean done) implements TwsEvent, Concrete { }
     record MarketDataType(int reqId, int marketDataType) implements TwsEvent, Concrete { }
+    record MktDepthExchanges(DepthMktDataDescription[] depthMktDataDescriptions) implements TwsEvent, Concrete { }
     record OpenOrder(int orderId, Contract contract, Order order, OrderState orderState) implements TwsEvent, Concrete { }
     record OpenOrderEnd() implements TwsEvent, Concrete { }
     record OrderBound(long permId, int clientId, int orderId) implements TwsEvent, Concrete { }
@@ -46,6 +47,8 @@ public sealed interface TwsEvent {
     record PositionMulti(int reqId, String account, String modelCode, Contract contract, Decimal pos, double avgCost) implements TwsEvent, Concrete { }
     record PositionMultiEnd(int reqId) implements TwsEvent, Concrete { }
     record RealtimeBar(int reqId, long time, double open, double high, double low, double close, Decimal volume, Decimal wap, int count) implements TwsEvent, Concrete { }
+    record RerouteMktDataReq(int reqId, int conId, String exchange) implements TwsEvent, Concrete { }
+    record RerouteMktDepthReq(int reqId, int conId, String exchange) implements TwsEvent, Concrete { }
     record SymbolSamples(int reqId, ContractDescription[] contractDescriptions) implements TwsEvent, Concrete { }
     record TickByTickAllLast(int reqId, int tickType, long time, double price, Decimal size, TickAttribLast tickAttribLast, String exchange, String specialConditions) implements TwsEvent, Concrete { }
     record TickByTickBidAsk(int reqId, long time, double bidPrice, double askPrice, Decimal bidSize, Decimal askSize, TickAttribBidAsk tickAttribBidAsk) implements TwsEvent, Concrete { }
@@ -60,6 +63,8 @@ public sealed interface TwsEvent {
     record TickString(int tickerId, int tickType, String value) implements TwsEvent, Concrete { }
     record UpdateAccountTime(String timeStamp) implements TwsEvent, Concrete { }
     record UpdateAccountValue(String key, String value, String currency, String accountName) implements TwsEvent, Concrete { }
+    record UpdateMktDepth(int tickerId, int position, int operation, int side, double price, Decimal size) implements TwsEvent, Concrete { }
+    record UpdateMktDepthL2(int tickerId, int position, String marketMaker, int operation, int side, double price, Decimal size, boolean isSmartDepth) implements TwsEvent, Concrete { }
     record UpdatePortfolio(Contract contract, Decimal position, double marketPrice, double marketValue, double averageCost, double unrealizedPNL, double realizedPNL, String accountName) implements TwsEvent, Concrete { }
 
 }

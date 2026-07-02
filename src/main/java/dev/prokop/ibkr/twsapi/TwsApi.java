@@ -242,6 +242,11 @@ public class TwsApi {
         }
 
         @Override
+        public void mktDepthExchanges(DepthMktDataDescription[] depthMktDataDescriptions) {
+            dispatch(new TwsEvent.MktDepthExchanges(depthMktDataDescriptions));
+        }
+
+        @Override
         public void marketDataType(int reqId, int marketDataType) {
             dispatch(new TwsEvent.MarketDataType(reqId, marketDataType));
         }
@@ -308,6 +313,16 @@ public class TwsApi {
         @Override
         public void realtimeBar(int reqId, long time, double open, double high, double low, double close, Decimal volume, Decimal wap, int count) {
             dispatch(new TwsEvent.RealtimeBar(reqId, time, open, high, low, close, volume, wap, count));
+        }
+
+        @Override
+        public void rerouteMktDataReq(int reqId, int conId, String exchange) {
+            dispatch(new TwsEvent.RerouteMktDataReq(reqId, conId, exchange));
+        }
+
+        @Override
+        public void rerouteMktDepthReq(int reqId, int conId, String exchange) {
+            dispatch(new TwsEvent.RerouteMktDepthReq(reqId, conId, exchange));
         }
 
         @Override
@@ -378,6 +393,16 @@ public class TwsApi {
         @Override
         public void updateAccountValue(String key, String value, String currency, String accountName) {
             dispatch(new TwsEvent.UpdateAccountValue(key, value, currency, accountName));
+        }
+
+        @Override
+        public void updateMktDepth(int tickerId, int position, int operation, int side, double price, Decimal size) {
+            dispatch(new TwsEvent.UpdateMktDepth(tickerId, position, operation, side, price, size));
+        }
+
+        @Override
+        public void updateMktDepthL2(int tickerId, int position, String marketMaker, int operation, int side, double price, Decimal size, boolean isSmartDepth) {
+            dispatch(new TwsEvent.UpdateMktDepthL2(tickerId, position, marketMaker, operation, side, price, size, isSmartDepth));
         }
 
         @Override
@@ -629,6 +654,29 @@ public class TwsApi {
     public void cancelTickByTickData(int reqId) {
         ensureReady();
         eClientSocket.cancelTickByTickData(reqId);
+    }
+
+    // --- Market Depth (Wave 7) ---
+
+    public int reqMktDepth(Contract contract, int numRows, boolean isSmartDepth, List<TagValue> mktDepthOptions) {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.reqMktDepth(reqId, contract, numRows, isSmartDepth, mktDepthOptions);
+        return reqId;
+    }
+
+    public int reqMktDepth(Contract contract, int numRows, boolean isSmartDepth) {
+        return reqMktDepth(contract, numRows, isSmartDepth, null);
+    }
+
+    public void cancelMktDepth(int tickerId, boolean isSmartDepth) {
+        ensureReady();
+        eClientSocket.cancelMktDepth(tickerId, isSmartDepth);
+    }
+
+    public void reqMktDepthExchanges() {
+        ensureReady();
+        eClientSocket.reqMktDepthExchanges();
     }
 
 }
