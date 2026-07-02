@@ -106,6 +106,21 @@ public class TwsApi {
         }
 
         @Override
+        public void accountDownloadEnd(String accountName) {
+            dispatch(new TwsEvent.AccountDownloadEnd(accountName));
+        }
+
+        @Override
+        public void accountUpdateMulti(int reqId, String account, String modelCode, String key, String value, String currency) {
+            dispatch(new TwsEvent.AccountUpdateMulti(reqId, account, modelCode, key, value, currency));
+        }
+
+        @Override
+        public void accountUpdateMultiEnd(int reqId) {
+            dispatch(new TwsEvent.AccountUpdateMultiEnd(reqId));
+        }
+
+        @Override
         public void bondContractDetails(int reqId, ContractDetails contractDetails) {
             dispatch(new TwsEvent.BondContractDetails(reqId, contractDetails));
         }
@@ -251,6 +266,11 @@ public class TwsApi {
         }
 
         @Override
+        public void pnlSingle(int reqId, Decimal pos, double dailyPnL, double unrealizedPnL, double realizedPnL, double value) {
+            dispatch(new TwsEvent.PnlSingle(reqId, pos, dailyPnL, unrealizedPnL, realizedPnL, value));
+        }
+
+        @Override
         public void position(String account, Contract contract, Decimal pos, double avgCost) {
             dispatch(new TwsEvent.Position(account, contract, pos, avgCost));
         }
@@ -258,6 +278,16 @@ public class TwsApi {
         @Override
         public void positionEnd() {
             dispatch(new TwsEvent.PositionEnd());
+        }
+
+        @Override
+        public void positionMulti(int reqId, String account, String modelCode, Contract contract, Decimal pos, double avgCost) {
+            dispatch(new TwsEvent.PositionMulti(reqId, account, modelCode, contract, pos, avgCost));
+        }
+
+        @Override
+        public void positionMultiEnd(int reqId) {
+            dispatch(new TwsEvent.PositionMultiEnd(reqId));
         }
 
         @Override
@@ -303,6 +333,21 @@ public class TwsApi {
         @Override
         public void tickString(int tickerId, int tickType, String value) {
             dispatch(new TwsEvent.TickString(tickerId, tickType, value));
+        }
+
+        @Override
+        public void updateAccountTime(String timeStamp) {
+            dispatch(new TwsEvent.UpdateAccountTime(timeStamp));
+        }
+
+        @Override
+        public void updateAccountValue(String key, String value, String currency, String accountName) {
+            dispatch(new TwsEvent.UpdateAccountValue(key, value, currency, accountName));
+        }
+
+        @Override
+        public void updatePortfolio(Contract contract, Decimal position, double marketPrice, double marketValue, double averageCost, double unrealizedPNL, double realizedPNL, String accountName) {
+            dispatch(new TwsEvent.UpdatePortfolio(contract, position, marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL, accountName));
         }
     };
 
@@ -469,6 +514,49 @@ public class TwsApi {
     public void cancelHistogramData(int tickerId) {
         ensureReady();
         eClientSocket.cancelHistogramData(tickerId);
+    }
+
+    // --- PnL Single & Account Updates (Wave 5) ---
+
+    public void reqAccountUpdates(boolean subscribe, String acctCode) {
+        ensureReady();
+        eClientSocket.reqAccountUpdates(subscribe, acctCode);
+    }
+
+    public int reqPnLSingle(String account, String modelCode, int conId) {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.reqPnLSingle(reqId, account, modelCode, conId);
+        return reqId;
+    }
+
+    public void cancelPnLSingle(int reqId) {
+        ensureReady();
+        eClientSocket.cancelPnLSingle(reqId);
+    }
+
+    public int reqPositionsMulti(String account, String modelCode) {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.reqPositionsMulti(reqId, account, modelCode);
+        return reqId;
+    }
+
+    public void cancelPositionsMulti(int reqId) {
+        ensureReady();
+        eClientSocket.cancelPositionsMulti(reqId);
+    }
+
+    public int reqAccountUpdatesMulti(String account, String modelCode, boolean ledgerAndNLV) {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.reqAccountUpdatesMulti(reqId, account, modelCode, ledgerAndNLV);
+        return reqId;
+    }
+
+    public void cancelAccountUpdatesMulti(int reqId) {
+        ensureReady();
+        eClientSocket.cancelAccountUpdatesMulti(reqId);
     }
 
 }

@@ -12,6 +12,9 @@ public sealed interface TwsEvent {
 
     record AccountSummary(int reqId, String account, String tag, String value, String currency) implements TwsEvent, Concrete { }
     record AccountSummaryEnd(int reqId) implements TwsEvent, Concrete { }
+    record AccountDownloadEnd(String accountName) implements TwsEvent, Concrete { }
+    record AccountUpdateMulti(int reqId, String account, String modelCode, String key, String value, String currency) implements TwsEvent, Concrete { }
+    record AccountUpdateMultiEnd(int reqId) implements TwsEvent, Concrete { }
     record BondContractDetails(int reqId, com.ib.client.ContractDetails contractDetails) implements TwsEvent, Concrete { }
     record CommissionAndFeesReport(com.ib.client.CommissionAndFeesReport commissionAndFeesReport) implements TwsEvent, Concrete { }
     record CompletedOrder(Contract contract, Order order, OrderState orderState) implements TwsEvent, Concrete { }
@@ -34,8 +37,11 @@ public sealed interface TwsEvent {
     record OrderBound(long permId, int clientId, int orderId) implements TwsEvent, Concrete { }
     record OrderStatus(int orderId, String status, Decimal filled, Decimal remaining, double avgFillPrice, long permId, int parentId, double lastFillPrice, int clientId, String whyHeld, double mktCapPrice) implements TwsEvent, Concrete { }
     record Pnl(int reqId, double dailyPnL, double unrealizedPnL, double realizedPnL) implements TwsEvent, Concrete { }
+    record PnlSingle(int reqId, Decimal pos, double dailyPnL, double unrealizedPnL, double realizedPnL, double value) implements TwsEvent, Concrete { }
     record Position(String account, Contract contract, Decimal pos, double avgCost) implements TwsEvent, Concrete { }
     record PositionEnd() implements TwsEvent, Concrete {}
+    record PositionMulti(int reqId, String account, String modelCode, Contract contract, Decimal pos, double avgCost) implements TwsEvent, Concrete { }
+    record PositionMultiEnd(int reqId) implements TwsEvent, Concrete { }
     record SymbolSamples(int reqId, ContractDescription[] contractDescriptions) implements TwsEvent, Concrete { }
     record TickEFP(int tickerId, int tickType, double basisPoints, String formattedBasisPoints, double impliedFuture, int holdDays, String futureLastTradeDate, double dividendImpact, double dividendsToLastTradeDate) implements TwsEvent, Concrete { }
     record TickGeneric(int tickerId, int tickType, double value) implements TwsEvent, Concrete { }
@@ -45,6 +51,9 @@ public sealed interface TwsEvent {
     record TickSize(int tickerId, int field, Decimal size) implements TwsEvent, Concrete { }
     record TickSnapshotEnd(int reqId) implements TwsEvent, Concrete { }
     record TickString(int tickerId, int tickType, String value) implements TwsEvent, Concrete { }
+    record UpdateAccountTime(String timeStamp) implements TwsEvent, Concrete { }
+    record UpdateAccountValue(String key, String value, String currency, String accountName) implements TwsEvent, Concrete { }
+    record UpdatePortfolio(Contract contract, Decimal position, double marketPrice, double marketValue, double averageCost, double unrealizedPNL, double realizedPNL, String accountName) implements TwsEvent, Concrete { }
 
 }
 
