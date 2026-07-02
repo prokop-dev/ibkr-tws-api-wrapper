@@ -4,7 +4,7 @@
 
     <groupId>dev.prokop.ibkr</groupId>
     <artifactId>tws-api</artifactId>
-    <version>0.0.3</version>
+    <version>0.0.4</version>
     <!-- <version>10.39.1</version> -->
 
     <name>Modern Java TWS API Wrapper</name>
@@ -166,7 +166,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>LATEST</version>
+            <version>1.5.32</version>
             <scope>runtime</scope>
         </dependency>
 
