@@ -176,6 +176,36 @@ public class TwsApi {
         }
 
         @Override
+        public void headTimestamp(int reqId, String headTimestamp) {
+            dispatch(new TwsEvent.HeadTimestamp(reqId, headTimestamp));
+        }
+
+        @Override
+        public void histogramData(int reqId, List<HistogramEntry> items) {
+            dispatch(new TwsEvent.HistogramData(reqId, items));
+        }
+
+        @Override
+        public void historicalData(int reqId, Bar bar) {
+            dispatch(new TwsEvent.HistoricalData(reqId, bar));
+        }
+
+        @Override
+        public void historicalDataEnd(int reqId, String startDateStr, String endDateStr) {
+            dispatch(new TwsEvent.HistoricalDataEnd(reqId, startDateStr, endDateStr));
+        }
+
+        @Override
+        public void historicalDataUpdate(int reqId, Bar bar) {
+            dispatch(new TwsEvent.HistoricalDataUpdate(reqId, bar));
+        }
+
+        @Override
+        public void historicalSchedule(int reqId, String startDateTime, String endDateTime, String timeZone, List<HistoricalSession> sessions) {
+            dispatch(new TwsEvent.HistoricalSchedule(reqId, startDateTime, endDateTime, timeZone, sessions));
+        }
+
+        @Override
         public void managedAccounts(String accountsList) {
             log.info("managedAccounts:" + accountsList);
             managedAccounts.addAll(List.of(accountsList.split(",")));
@@ -402,6 +432,43 @@ public class TwsApi {
     public void reqMarketDataType(int marketDataType) {
         ensureReady();
         eClientSocket.reqMarketDataType(marketDataType);
+    }
+
+    // --- Historical Data (Wave 4) ---
+
+    public int reqHistoricalData(Contract contract, String endDateTime, String durationStr, String barSizeSetting, String whatToShow, int useRTH, int formatDate, boolean keepUpToDate, List<TagValue> chartOptions) {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.reqHistoricalData(reqId, contract, endDateTime, durationStr, barSizeSetting, whatToShow, useRTH, formatDate, keepUpToDate, chartOptions);
+        return reqId;
+    }
+
+    public int reqHistoricalData(Contract contract, String endDateTime, String durationStr, String barSizeSetting, String whatToShow, int useRTH, boolean keepUpToDate) {
+        return reqHistoricalData(contract, endDateTime, durationStr, barSizeSetting, whatToShow, useRTH, 1, keepUpToDate, null);
+    }
+
+    public void cancelHistoricalData(int tickerId) {
+        ensureReady();
+        eClientSocket.cancelHistoricalData(tickerId);
+    }
+
+    public int reqHeadTimestamp(Contract contract, String whatToShow, int useRTH, int formatDate) {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.reqHeadTimestamp(reqId, contract, whatToShow, useRTH, formatDate);
+        return reqId;
+    }
+
+    public int reqHistogramData(Contract contract, boolean useRTH, String timePeriod) {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.reqHistogramData(reqId, contract, useRTH, timePeriod);
+        return reqId;
+    }
+
+    public void cancelHistogramData(int tickerId) {
+        ensureReady();
+        eClientSocket.cancelHistogramData(tickerId);
     }
 
 }

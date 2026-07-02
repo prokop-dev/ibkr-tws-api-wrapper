@@ -2,6 +2,8 @@ package dev.prokop.ibkr.twsapi;
 
 import com.ib.client.*;
 
+import java.util.List;
+
 public sealed interface TwsEvent {
 
     sealed interface Concrete {
@@ -20,6 +22,12 @@ public sealed interface TwsEvent {
     record Error(int id, long errorTime, int errorCode, String errorMsg, String advancedOrderRejectJson) implements TwsEvent, Concrete { }
     record ExecDetails(int reqId, Contract contract, Execution execution) implements TwsEvent, Concrete { }
     record ExecDetailsEnd(int reqId) implements TwsEvent, Concrete { }
+    record HeadTimestamp(int reqId, String headTimestamp) implements TwsEvent, Concrete { }
+    record HistogramData(int reqId, List<HistogramEntry> items) implements TwsEvent, Concrete { }
+    record HistoricalData(int reqId, Bar bar) implements TwsEvent, Concrete { }
+    record HistoricalDataEnd(int reqId, String startDateStr, String endDateStr) implements TwsEvent, Concrete { }
+    record HistoricalDataUpdate(int reqId, Bar bar) implements TwsEvent, Concrete { }
+    record HistoricalSchedule(int reqId, String startDateTime, String endDateTime, String timeZone, List<HistoricalSession> sessions) implements TwsEvent, Concrete { }
     record MarketDataType(int reqId, int marketDataType) implements TwsEvent, Concrete { }
     record OpenOrder(int orderId, Contract contract, Order order, OrderState orderState) implements TwsEvent, Concrete { }
     record OpenOrderEnd() implements TwsEvent, Concrete { }
