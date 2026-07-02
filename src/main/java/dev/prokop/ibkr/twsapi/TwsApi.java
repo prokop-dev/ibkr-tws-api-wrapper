@@ -221,6 +221,21 @@ public class TwsApi {
         }
 
         @Override
+        public void historicalTicks(int reqId, List<HistoricalTick> ticks, boolean done) {
+            dispatch(new TwsEvent.HistoricalTicks(reqId, ticks, done));
+        }
+
+        @Override
+        public void historicalTicksBidAsk(int reqId, List<HistoricalTickBidAsk> ticks, boolean done) {
+            dispatch(new TwsEvent.HistoricalTicksBidAsk(reqId, ticks, done));
+        }
+
+        @Override
+        public void historicalTicksLast(int reqId, List<HistoricalTickLast> ticks, boolean done) {
+            dispatch(new TwsEvent.HistoricalTicksLast(reqId, ticks, done));
+        }
+
+        @Override
         public void managedAccounts(String accountsList) {
             log.info("managedAccounts:" + accountsList);
             managedAccounts.addAll(List.of(accountsList.split(",")));
@@ -291,8 +306,28 @@ public class TwsApi {
         }
 
         @Override
+        public void realtimeBar(int reqId, long time, double open, double high, double low, double close, Decimal volume, Decimal wap, int count) {
+            dispatch(new TwsEvent.RealtimeBar(reqId, time, open, high, low, close, volume, wap, count));
+        }
+
+        @Override
         public void symbolSamples(int reqId, ContractDescription[] contractDescriptions) {
             dispatch(new TwsEvent.SymbolSamples(reqId, contractDescriptions));
+        }
+
+        @Override
+        public void tickByTickAllLast(int reqId, int tickType, long time, double price, Decimal size, TickAttribLast tickAttribLast, String exchange, String specialConditions) {
+            dispatch(new TwsEvent.TickByTickAllLast(reqId, tickType, time, price, size, tickAttribLast, exchange, specialConditions));
+        }
+
+        @Override
+        public void tickByTickBidAsk(int reqId, long time, double bidPrice, double askPrice, Decimal bidSize, Decimal askSize, TickAttribBidAsk tickAttribBidAsk) {
+            dispatch(new TwsEvent.TickByTickBidAsk(reqId, time, bidPrice, askPrice, bidSize, askSize, tickAttribBidAsk));
+        }
+
+        @Override
+        public void tickByTickMidPoint(int reqId, long time, double midPoint) {
+            dispatch(new TwsEvent.TickByTickMidPoint(reqId, time, midPoint));
         }
 
         @Override
@@ -557,6 +592,43 @@ public class TwsApi {
     public void cancelAccountUpdatesMulti(int reqId) {
         ensureReady();
         eClientSocket.cancelAccountUpdatesMulti(reqId);
+    }
+
+    // --- Tick-by-Tick & Real-Time Bars (Wave 6) ---
+
+    public int reqRealTimeBars(Contract contract, int barSize, String whatToShow, boolean useRTH, List<TagValue> realTimeBarsOptions) {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.reqRealTimeBars(reqId, contract, barSize, whatToShow, useRTH, realTimeBarsOptions);
+        return reqId;
+    }
+
+    public int reqRealTimeBars(Contract contract, int barSize, String whatToShow, boolean useRTH) {
+        return reqRealTimeBars(contract, barSize, whatToShow, useRTH, null);
+    }
+
+    public void cancelRealTimeBars(int tickerId) {
+        ensureReady();
+        eClientSocket.cancelRealTimeBars(tickerId);
+    }
+
+    public int reqHistoricalTicks(Contract contract, String startDateTime, String endDateTime, int numberOfTicks, String whatToShow, int useRth, boolean ignoreSize, List<TagValue> miscOptions) {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.reqHistoricalTicks(reqId, contract, startDateTime, endDateTime, numberOfTicks, whatToShow, useRth, ignoreSize, miscOptions);
+        return reqId;
+    }
+
+    public int reqTickByTickData(Contract contract, String tickType, int numberOfTicks, boolean ignoreSize) {
+        ensureReady();
+        final var reqId = nextValidId();
+        eClientSocket.reqTickByTickData(reqId, contract, tickType, numberOfTicks, ignoreSize);
+        return reqId;
+    }
+
+    public void cancelTickByTickData(int reqId) {
+        ensureReady();
+        eClientSocket.cancelTickByTickData(reqId);
     }
 
 }
